@@ -1,0 +1,35 @@
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f3f4f6;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.section-header:hover {
+  background: #e5e7eb;
+}
+
+.section-body {
+  background: #fff;
+  padding: 12px;
+  border-left: 3px solid #3b82f6;
+  border-radius: 0 0 8px 8px;
+  margin-bottom: 8px;
+}
+
+.arrow {
+  font-size: 1.2em;
+}
+
+pre {
+  background: #f8f9fa;
+  padding: 8px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}

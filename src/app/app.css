@@ -1,0 +1,77 @@
+.container {
+  max-width: 900px;
+  margin: 24px auto;
+  font-family: Arial, sans-serif;
+  padding: 12px;
+}
+
+.form label {
+  display: block;
+  margin-bottom: 12px;
+}
+
+textarea {
+  width: 100%;
+  font-family: monospace;
+}
+
+.box {
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  padding: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.actions {
+  margin-top: 8px;
+}
+
+.status {
+  margin-left: 12px;
+  color: #0a66ff;
+}
+
+.muted {
+  color: #666;
+}
+
+.events {
+  list-style: none;
+  padding-left: 0;
+}
+
+.corrected {
+  border: 1px solid #e2e8f0;
+  padding: 10px;
+  background: #fff;
+}
+
+.error {
+  margin-top: 12px;
+  color: darkred;
+}
+
+.qc-section {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.qc-header {
+  background: #f6f6f6;
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.qc-body {
+  padding: 10px;
+  background: #fff;
+}
+
+.arrow {
+  font-weight: bold;
+}
