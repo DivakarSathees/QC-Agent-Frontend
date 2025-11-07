@@ -1,5 +1,5 @@
 import { Component, OnDestroy, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { Qc, QCEvent } from './services/qc';
 import { Subscription } from 'rxjs';
@@ -11,7 +11,8 @@ import { CommonModule, JsonPipe } from '@angular/common';
   imports: [RouterOutlet,
     CommonModule,         // ✅ Enables *ngIf, *ngFor, etc.
     ReactiveFormsModule,  // ✅ Enables [formGroup] binding
-    JsonPipe
+    JsonPipe,
+    FormsModule
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -21,6 +22,15 @@ export class App implements OnDestroy {
 
   form: FormGroup;
   qbForm: FormGroup;
+  questionBanks: any[] = [];
+  questions: any[] = [];
+  selectedQuestionId: string | null = null;
+  fetchingQuestions = false;
+  selectedForm: 'qc' | 'qb' = 'qc'; // default to QC form
+  filteredQuestionBanks: any[] = [];
+  uniqueCreators: string[] = [];
+  selectedCreator: string = '';
+  selectedQbId: string | null = null;
   zipFile: File | null = null;
   events: QCEvent[] = [];
   qcResult: any = null;
@@ -58,14 +68,79 @@ export class App implements OnDestroy {
     }
     this.fetchingQBs = true;
     this.qc.getQuestionBanks(data).subscribe({
-      next: (response) => {
-        console.log('Received question banks:', response);
+      next: (res: any) => {
+        console.log(res);
+        
+        this.questionBanks = res.results.questionbanks || [];
+        this.filteredQuestionBanks = [...this.questionBanks]; // initially no filter
+        this.extractUniqueCreators();
         this.fetchingQBs = false;
-        // Handle the received question banks as needed
       },
       error: (err) => {
         console.error('Error fetching question banks:', err);
       }
+    });
+  }
+
+  filterByCreator() {
+    if (this.selectedCreator) {
+      this.filteredQuestionBanks = this.questionBanks.filter(
+        qb => qb.createdBy === this.selectedCreator
+      );
+    } else {
+      this.filteredQuestionBanks = [...this.questionBanks];
+    }
+  }
+
+  extractUniqueCreators() {
+    const creators = this.questionBanks.map(qb => qb.createdBy).filter(Boolean);
+    this.uniqueCreators = Array.from(new Set(creators));
+  }
+
+  selectQB(qb: any) {
+    this.selectedQbId = qb.qb_id;
+  }
+
+  selectQuestion(question: any) {
+  if (!question) return;
+
+  this.selectedQuestionId = question.q_id; // ✅ Move selection logic here
+
+  const description = question.question_data || '';
+  const config = question.project_questions?.config
+    ? JSON.stringify({ config: question.project_questions.config })
+    : '';
+
+  this.form.patchValue({
+    description,
+    config
+  });
+
+  console.log('Selected question loaded into QC form:', { description, config });
+}
+
+
+  fetchQuestionsForQB() {
+    if (!this.selectedQbId) {
+      alert('Please select a Question Bank first.');
+      return;
+    }
+
+    const authToken = this.qbForm.value.authToken;
+    this.fetchingQuestions = true;
+
+    this.qc.getQuestionsForQB(authToken, this.selectedQbId).subscribe({
+      next: (res: any) => {
+        console.log('Questions for QB:', res);
+        this.questions = res.non_group_questions || [];
+        console.log('Fetched questions:', this.questions);
+        
+        this.fetchingQuestions = false;
+      },
+      error: (err) => {
+        console.error('Error fetching questions:', err);
+        this.fetchingQuestions = false;
+      },
     });
   }
 

@@ -1,5 +1,5 @@
 <div class="container">
-  <div>
+  <!-- <div>
   <h1 style="justify-content: center; display: flex;">AI QC Agent - Project Questions</h1>
 
   <form (ngSubmit)="fetchQBs()" [formGroup]="qbForm" class="form">
@@ -40,7 +40,196 @@
       <span *ngIf="sending" class="status">Running...</span>
     </div>
   </form>
+  </div> -->
+
+  <div>
+  <h1 style="justify-content: center; display: flex;">AI QC Agent - Project Questions</h1>
+
+  <!-- 🔘 Toggle Buttons -->
+  <div class="toggle-container">
+    <button 
+      [ngClass]="{ active: selectedForm === 'qb' }"
+      (click)="selectedForm = 'qb'">
+      Fetch QB
+    </button>
+    <button 
+      [ngClass]="{ active: selectedForm === 'qc' }"
+      (click)="selectedForm = 'qc'">
+      Run QC Manually
+    </button>
   </div>
+
+  <!-- 🔐 Fetch Question Banks Form -->
+  <form *ngIf="selectedForm === 'qb'"
+        (ngSubmit)="fetchQBs()" 
+        [formGroup]="qbForm" 
+        class="form fade-in">
+
+    <label>
+      Token:
+      <textarea formControlName="authToken" rows="4" placeholder="Paste token here"></textarea>
+    </label>
+
+    <label>
+      QB name:
+      <input type="text" formControlName="search" placeholder="Type QB Name here" />
+    </label>
+
+    <div class="actions">
+      <button type="submit" [disabled]="fetchingQBs">Fetch Question Banks</button>
+      <span *ngIf="fetchingQBs" class="status">Fetching...</span>
+    </div>
+  </form>
+
+  <!-- 🧠 QC Form -->
+  <form *ngIf="selectedForm === 'qc'"
+        (ngSubmit)="start()" 
+        [formGroup]="form" 
+        class="form fade-in">
+
+    <label>
+      Description (project description you will send):
+      <textarea formControlName="description" rows="6" placeholder="Paste project description here"></textarea>
+    </label>
+
+    <label>
+      Config JSON:
+      <textarea formControlName="config" rows="4" placeholder='{"testcases": [...]}'></textarea>
+    </label>
+
+    <label>
+      Zip file (project boilerplate):
+      <input type="file" (change)="onFileChange($event)" accept=".zip" />
+    </label>
+
+    <div class="actions">
+      <button type="submit" [disabled]="sending">Start Full Run</button>
+      <span *ngIf="sending" class="status">Running...</span>
+    </div>
+  </form>
+</div>
+
+
+  
+  <!-- ✅ Question Bank Listing -->
+
+<h2>Fetched Question Banks</h2>
+<div *ngIf="filteredQuestionBanks.length; else noQbs">
+  <div style="display: flex;
+    justify-content: space-between;
+    align-items: center;">
+    <div>
+  <label>
+    Filter by Creator:
+    <select [(ngModel)]="selectedCreator" (change)="filterByCreator()">
+      <option value="">All</option>
+      <option *ngFor="let c of uniqueCreators" [value]="c">{{ c }}</option>
+    </select>
+  </label>
+  </div>
+<div>
+  <div class="actions">
+    <button (click)="fetchQuestionsForQB()" [disabled]="!selectedQbId || fetchingQuestions">
+      Fetch Questions
+    </button>
+    <span *ngIf="fetchingQuestions" class="status">Loading...</span>
+  </div>
+  </div>
+  </div>
+
+  <ul class="qb-list">
+    <li *ngFor="let qb of filteredQuestionBanks" 
+        [class.selected]="selectedQbId === qb.qb_id"
+        (click)="selectQB(qb)">
+      <strong>{{ qb.qb_name }}</strong> — {{ qb.createdBy }} - Questions: {{ qb.questionCount || 'N/A' }}
+    </li>
+  </ul>
+
+  <!-- <div class="actions">
+    <button (click)="fetchQuestionsForQB()" [disabled]="!selectedQbId || fetchingQuestions">
+      Fetch Questions
+    </button>
+    <span *ngIf="fetchingQuestions" class="status">Loading...</span>
+  </div> -->
+</div>
+<ng-template #noQbs>
+  <p class="muted">No Question Banks found yet.</p>
+</ng-template>
+
+<!-- ✅ Questions under selected QB -->
+<div *ngIf="questions.length">
+  <div *ngIf="questions.length">
+  <h3>Questions in Selected QB</h3>
+  <form (ngSubmit)="start()" 
+        [formGroup]="form" 
+        class="form fade-in">
+
+    
+
+    <label>
+      Zip file (project boilerplate):
+      <input type="file" (change)="onFileChange($event)" accept=".zip" />
+    </label>
+
+    <div class="actions">
+      <button type="submit" [disabled]="sending">Start Full Run</button>
+      <span *ngIf="sending" class="status">Running...</span>
+    </div>
+  </form>
+<ul class="question-list">
+  <li *ngFor="let q of questions; index as i"
+      [class.selected]="selectedQuestionId === q.q_id">
+
+    <div class="question-card">
+      <!-- Move click only to header -->
+      <div class="question-header" 
+           (click)="selectQuestion(q)">
+        <strong>Q{{ i + 1 }}. {{ q.question_title || 'Project Question' }}</strong>
+        <span class="load-label">Click to load for QC</span>
+      </div>
+
+      <div class="question-body">
+        <div [innerHTML]="q.question_data | slice:0:100"></div>
+
+        <p><strong>Topic:</strong> {{ q.topic?.name || '—' }}</p>
+        <p><strong>Sub Topic:</strong> {{ q.sub_topic?.name || '—' }}</p>
+        <p><strong>Difficulty:</strong> {{ q.manual_difficulty || 'N/A' }}</p>
+        <p><strong>Type:</strong> {{ q.question_type }}</p>
+
+        <div *ngIf="q.project_questions?.boilerPlate?.url">
+          <a [href]="q.project_questions.boilerPlate.url" target="_blank">
+            🔗 Download Boilerplate
+          </a>
+        </div>
+
+        <details *ngIf="q.project_questions?.config?.length">
+          <summary>Show Config JSON</summary>
+          <pre>{{ q.project_questions.config | json }}</pre>
+        </details>
+
+        <form *ngIf="selectedQuestionId === q.q_id" 
+              (ngSubmit)="start()" 
+              [formGroup]="form" 
+              class="form fade-in">
+
+          <label>
+            Zip file (project boilerplate):
+            <input type="file" (change)="onFileChange($event)" accept=".zip" />
+          </label>
+
+          <div class="actions">
+            <button type="submit" [disabled]="sending">Start Full Run</button>
+            <span *ngIf="sending" class="status">Running...</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </li>
+</ul>
+
+</div>
+</div>
+
 
   <section class="results">
     <div class="parent-container">

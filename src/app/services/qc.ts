@@ -132,5 +132,16 @@ export class Qc {
     
     return this.http.post(`${this.endpoint}/fetch-qbs`, data);
   }
+
+  getQuestionsForQB(authToken: string, qb_id: string): Observable<any> {
+    const body = { 
+      authToken: authToken,
+      "qb_id": qb_id,
+      "type": "Single",
+      "page": 1,
+      "limit": 500
+    };
+    return this.http.post(`${this.endpoint}/fetch-questions`, body);
+  }
   
 }
