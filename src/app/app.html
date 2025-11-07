@@ -1,4 +1,5 @@
 <div class="container">
+  <div>
   <h1>AI QC - Full Run (Angular 20)</h1>
 
   <form (ngSubmit)="start()" [formGroup]="form" class="form">
@@ -22,15 +23,18 @@
       <span *ngIf="sending" class="status">Running...</span>
     </div>
   </form>
+  </div>
 
   <section class="results">
+    <div class="parent-container">
+    <div class="left-container">
     <h2>Request — Description sent</h2>
     <!-- <pre class="box">{{ form.value.description }}</pre> -->
     <div [innerHTML]="form.value.description"></div>
-
-    <h2>QC Result (streamed)</h2>
+    </div>
+<div class="right-container">
+    <h2>QC Results</h2>
 <div *ngIf="qcResult">
-  <h2>QC Results</h2>
 
   <div *ngFor="let key of getObjectEntries(qcResult)">
   <div class="qc-header" (click)="toggleSection(key.key)">
@@ -50,9 +54,77 @@
       </div>  
     </div>
 
-    <div *ngIf="key.key !== 'corrections'">
+    <!-- <div *ngIf="key.key !== 'corrections'">
       <pre>{{ key.value | json }}</pre>
+    </div> -->
+    <!-- For all non-corrections keys -->
+<div *ngIf="key.key !== 'corrections'">
+
+  <!-- Special layout for test_coverage -->
+  <div *ngIf="key.key === 'test_coverage'">
+    <h3>Test Coverage Summary</h3>
+    <p><strong>Coverage Score:</strong> {{ key.value.coverage_score }}%</p>
+    <p><strong>Total Tests:</strong> {{ key.value.total_tests }}</p>
+    <p *ngIf="key.value.remarks"><strong>Remarks:</strong> {{ key.value.remarks }}</p>
+
+    <div *ngIf="key.value.missing_details?.length">
+      <h4>Missing Details:</h4>
+      <ul>
+        <li *ngFor="let miss of key.value.missing_details">{{ miss }}</li>
+      </ul>
     </div>
+
+    <h4>Per-Test Details</h4>
+    <table class="coverage-table">
+      <thead>
+        <tr>
+          <th>Test Name</th>
+          <th>Covered?</th>
+          <th>Missing Info</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let test of key.value.per_test_details">
+          <td>{{ test.test_name }}</td>
+          <td>
+            <span [ngClass]="test.is_covered ? 'badge-covered' : 'badge-missing'">
+              {{ test.is_covered ? '✅ Yes' : '❌ No' }}
+            </span>
+          </td>
+          <td>
+            <ul>
+              <li *ngFor="let info of test.missing_info">{{ info }}</li>
+              <li *ngIf="!test.missing_info?.length">—</li>
+            </ul>
+          </td>
+          <td>{{ test.reason }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ✅ Completeness -->
+          <div *ngIf="key.key === 'completeness'">
+            <h3>Completeness Report</h3>
+            <p><strong>Completeness Score:</strong> {{ key.value.completeness_score }}%</p>
+            <p *ngIf="key.value.remarks"><strong>Remarks:</strong> {{ key.value.remarks }}</p>
+
+            <div *ngIf="key.value.missing_components?.length">
+              <h4>Missing Components:</h4>
+              <ul>
+                <li *ngFor="let comp of key.value.missing_components">{{ comp }}</li>
+              </ul>
+            </div>
+          </div>
+
+  <!-- Fallback for all other QC results -->
+  <!-- 🔹 Default JSON fallback for other QC types -->
+          <div *ngIf="key.key !== 'test_coverage' && key.key !== 'completeness'">
+            <pre>{{ key.value | json }}</pre>
+          </div>
+</div>
+
   </div>
 </div>
 
@@ -60,6 +132,8 @@
 
 <div *ngIf="!qcResult" class="muted">
   No QC results yet.
+</div>
+</div>
 </div>
 
 
@@ -92,7 +166,6 @@
     </div>
   </section>
   
-  <!-- <app-qc-results [qcResults]="qcResult"></app-qc-results> -->
 
 </div>
 

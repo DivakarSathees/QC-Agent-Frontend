@@ -76,6 +76,8 @@ export class App implements OnDestroy {
   }
 
   private handleEvent(evt: QCEvent) {
+    console.log('Received event:', evt);
+    
     this.events.push(evt);
 
     // handle by stage presence
