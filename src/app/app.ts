@@ -20,12 +20,14 @@ export class App implements OnDestroy {
   protected readonly title = signal('angularapp');
 
   form: FormGroup;
+  qbForm: FormGroup;
   zipFile: File | null = null;
   events: QCEvent[] = [];
   qcResult: any = null;
   dockerResult: any = null;
   completedDescription: string | null = null;
   sending = false;
+  fetchingQBs = false;
   error: string | null = null;
   private sub: Subscription | null = null;
 
@@ -33,6 +35,10 @@ export class App implements OnDestroy {
     this.form = this.fb.group({
       description: ['', Validators.required],
       config: [JSON.stringify({ /* default config here */ }), Validators.required],
+    });
+    this.qbForm = this.fb.group({
+      authToken: ['', Validators.required],
+      search: ['', Validators.required],
     });
   }
 
@@ -43,6 +49,24 @@ export class App implements OnDestroy {
     } else {
       this.zipFile = null;
     }
+  }
+
+  fetchQBs() {
+    const data = {
+      authToken: this.qbForm.value.authToken,
+      search: this.qbForm.value.search
+    }
+    this.fetchingQBs = true;
+    this.qc.getQuestionBanks(data).subscribe({
+      next: (response) => {
+        console.log('Received question banks:', response);
+        this.fetchingQBs = false;
+        // Handle the received question banks as needed
+      },
+      error: (err) => {
+        console.error('Error fetching question banks:', err);
+      }
+    });
   }
 
   start() {

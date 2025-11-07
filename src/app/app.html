@@ -1,6 +1,23 @@
 <div class="container">
   <div>
-  <h1>AI QC - Full Run (Angular 20)</h1>
+  <h1 style="justify-content: center; display: flex;">AI QC Agent - Project Questions</h1>
+
+  <form (ngSubmit)="fetchQBs()" [formGroup]="qbForm" class="form">
+    <label>
+      Token:
+      <textarea formControlName="authToken" rows="6" placeholder="Paste token here"></textarea>
+    </label>
+
+    <label>
+      QB name:
+      <textarea formControlName="search" rows="6" placeholder="Type QB Name here"></textarea>
+    </label>
+
+    <div class="actions">
+      <button type="submit" [disabled]="fetchingQBs">Fetch Question Banks</button>
+      <span *ngIf="fetchingQBs" class="status">Fetching...</span>
+    </div>
+  </form>
 
   <form (ngSubmit)="start()" [formGroup]="form" class="form">
     <label>

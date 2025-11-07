@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 export interface QCEvent {
   stage?: string;
@@ -13,9 +14,8 @@ export interface QCEvent {
   providedIn: 'root',
 })
 export class Qc {
-
-  private endpoint = 'http://0.0.0.0:8080/qc/full-run';
-  constructor() {}
+  private endpoint = 'http://0.0.0.0:8080';
+  constructor(private http: HttpClient) {}
 
   startFullRun(
     description: string,
@@ -30,7 +30,7 @@ export class Qc {
     form.append('config', JSON.stringify(configObj));
 
     // Use fetch so we can consume the ReadableStream progressively.
-    fetch(this.endpoint, {
+    fetch(`${this.endpoint}/qc/full-run`, {
       method: 'POST',
       body: form,
       // credentials: 'include', // if needed
@@ -125,6 +125,12 @@ export class Qc {
 
     // return as observable
     return subject.asObservable();
+  }
+
+  getQuestionBanks(data: any) {
+    console.log('Fetching question banks with data:', data);
+    
+    return this.http.post(`${this.endpoint}/fetch-qbs`, data);
   }
   
 }
