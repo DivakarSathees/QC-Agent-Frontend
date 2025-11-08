@@ -160,22 +160,7 @@
 <div *ngIf="questions.length">
   <div *ngIf="questions.length">
   <h3>Questions in Selected QB</h3>
-  <form (ngSubmit)="start()" 
-        [formGroup]="form" 
-        class="form fade-in">
-
-    
-
-    <label>
-      Zip file (project boilerplate):
-      <input type="file" (change)="onFileChange($event)" accept=".zip" />
-    </label>
-
-    <div class="actions">
-      <button type="submit" [disabled]="sending">Start Full Run</button>
-      <span *ngIf="sending" class="status">Running...</span>
-    </div>
-  </form>
+  
 <ul class="question-list">
   <li *ngFor="let q of questions; index as i"
       [class.selected]="selectedQuestionId === q.q_id">
